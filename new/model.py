@@ -57,13 +57,13 @@ def dcnn(input,size_channel,size_m):
         output = out + input
     return output
 def module(input, is_training=True, out_channels=1,kstage=1,size_m = 32):
-    delta1 = tf.get_variable(name='d1',shape=[1],initializer=tf.zeros_initializer())     
+    delta1 = tf.get_variable(name='d1',shape=[1],initializer=tf.ones_initializer())     
     x1 = tf.multiply(delta1,input)
     x2 = x1
     with tf.variable_scope("denoise_cnn") as scope:
         for i in range (kstage):
-            delta2 = tf.get_variable(name='d2%d' %i,shape=[1],initializer=tf.zeros_initializer())
-            delta3 = tf.get_variable(name='d3%d' %i,shape=[1],initializer=tf.zeros_initializer())
+            delta2 = tf.get_variable(name='d2%d' %i,shape=[1],initializer=tf.ones_initializer())
+            delta3 = tf.get_variable(name='d3%d' %i,shape=[1],initializer=tf.ones_initializer())
             x2 = dcnn(x2,out_channels,size_m)
             x2 = tf.multiply(delta3,input) + tf.multiply(delta2,x2)
             scope.reuse_variables()
@@ -84,8 +84,8 @@ class denoiser(object):
         # self.X = self.Y_ + tf.truncated_normal(shape=tf.shape(self.Y_), stddev=self.sigma / 255.0)  # noisy images
         self.Y = module(self.X, is_training=self.is_training,out_channels=self.input_c_dim,kstage=1,size_m = self.size_m)
         self.loss = (1.0 / batch_size) * tf.nn.l2_loss(self.Y_ - self.Y)
-	self.losses1 = tf.reduce_max(self.Y_)
-	self.losses2 = tf.reduce_max(self.Y)
+        self.losses1 = tf.reduce_max(self.Y_)
+        self.losses2 = tf.reduce_max(self.Y)
         self.lr = tf.placeholder(tf.float32, name='learning_rate')
         self.eva_psnr = tf_psnr(self.Y, self.Y_)
         optimizer = tf.train.AdamOptimizer(self.lr,name='AdamOptimizer')
@@ -128,7 +128,7 @@ class denoiser(object):
                                                                          self.size_m:32})
         return output_clean_image, noisy_image, psnr
 
-    def train(self, data, eval_data, batch_size, ckpt_dir, epoch, lr, sample_dir, eval_every_epoch=2):
+    def train(self, data, eval_data, batch_size, ckpt_dir, epoch, lr, sample_dir, eval_every_epoch=1):
         # assert data range is between 0 and 1
         numBatch = int(data.shape[0] / batch_size)
         # load pretrained model
@@ -160,10 +160,16 @@ class denoiser(object):
                 _, losses1,losses2,loss, summary = self.sess.run([self.train_op,self.losses1, self.losses2,self.loss, merged],
                                                  feed_dict={self.Y_: batch_images, self.lr: lr[epoch],
                                                             self.is_training: True, self.size_m:5})
-		#print(losses1)
-		#print(losses2)
-                print("Epoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.6f"
-                      % (epoch + 1, batch_id + 1, numBatch, time.time() - start_time, loss))
+                #print(losses1)
+                #print(losses2)
+                #print("Epoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.6f"
+                #        % (epoch + 1, batch_id + 1, numBatch, time.time() - start_time, loss))
+                if(np.mod(batch_id + 1 , 10) == 0):		#print every 10 batch
+                    sys.stdout.write("\rEpoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.6f"
+                                        % (epoch + 1, batch_id + 1, numBatch, time.time() - start_time, loss))
+                    sys.stdout.flush()
+                if(np.mod(batch_id + 1,200) == 0 or (batch_id) + 1 == numBatch):	#change every 200 batch
+                    print('')
                 iter_num += 1
                 writer.add_summary(summary, iter_num)
             if np.mod(epoch + 1, eval_every_epoch) == 0:
