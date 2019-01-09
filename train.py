@@ -5,6 +5,7 @@ sparse_vec_dim = 100
 dense_vec_dim = 50
 test_rate = 0.1
 sparse_rate = 0.1
+
 SNR = 50
 maxsample = 500000
 batch_size = 256
@@ -29,11 +30,11 @@ print np.sum((np.dot(test_y_candidate,np.transpose(dict))-test_x)**2)
 
 
 
-
 regression = True
 train_set, valid_set, test_set = load_Sparse_data(Sparse_path, valid_portion=0.1, maxlen=maxsample,regression=regression)
 print type(train_set)
 a,b=train_set
+
 print np.sum((np.dot(np.array(valid_set[1]),np.transpose(dict))-np.array(valid_set[0]))**2)
 GRU = LISTA(hidden_state = sparse_vec_dim,input_dim = dense_vec_dim,hidden_layer= 20)
 

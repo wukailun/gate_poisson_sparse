@@ -26,7 +26,6 @@ class Basic_Model(object):
                                                        })
         return loss
 
-
     def save(self, sess, path):
         saver = tf.train.Saver()
         saver.save(sess, save_path=path)
@@ -82,6 +81,7 @@ class GRUCell(tf.nn.rnn_cell.RNNCell):
 
 
 
+
 class LISTA(Basic_Model):
     def __init__(self,hidden_state,input_dim,hidden_layer):
         super(LISTA, self).__init__(hidden_state,input_dim)
@@ -122,4 +122,3 @@ self.batch_feature_ph: inps[1]})
         return out
 
 
-        # Fully connected layer

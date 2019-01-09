@@ -33,6 +33,7 @@ def generor_data(dense_vec_dim, sparse_vec_dim,dictionary ,max_sample,nonnegtive
         y_benchmark = np.dot(dictionary,x_orign)
         y = wgn(y_benchmark,SNR)
 	#print y-np.dot(dictionary,x_orign)
+
         y_benchmark_out[i,:] = y_benchmark
         y_out[i,:] = y
         x_orign_out[i,:] = x_orign
@@ -56,6 +57,7 @@ def save_file(x, y, data_dir, dictionary, test_rate, SNR, sparse_rate):
     data_file['A'] = dictionary
     data_file.close()
     return data_fn
+
 def dictionary_gener(dense_vec_dim,sparse_vec_dim,dict_type = 'rand'):
     if dict_type == 'rand':
         A = np.random.normal(loc = 0, scale = 1.0, size = [dense_vec_dim,sparse_vec_dim])/np.sqrt(dense_vec_dim)
