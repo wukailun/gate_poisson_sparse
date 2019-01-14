@@ -32,6 +32,8 @@ def generor_data(dense_vec_dim, sparse_vec_dim,dictionary ,max_sample,nonnegtive
         x_orign[x_index] = 0
         y_benchmark = np.dot(dictionary,x_orign)
         y = wgn(y_benchmark,SNR)
+	#print y-np.dot(dictionary,x_orign)
+
         y_benchmark_out[i,:] = y_benchmark
         y_out[i,:] = y
         x_orign_out[i,:] = x_orign
@@ -54,7 +56,8 @@ def save_file(x, y, data_dir, dictionary, test_rate, SNR, sparse_rate):
     data_file['test_view'] = y[train_dim:,:]
     data_file['A'] = dictionary
     data_file.close()
-    return
+    return data_fn
+
 def dictionary_gener(dense_vec_dim,sparse_vec_dim,dict_type = 'rand'):
     if dict_type == 'rand':
         A = np.random.normal(loc = 0, scale = 1.0, size = [dense_vec_dim,sparse_vec_dim])/np.sqrt(dense_vec_dim)
@@ -63,11 +66,11 @@ def dictionary_gener(dense_vec_dim,sparse_vec_dim,dict_type = 'rand'):
     elif dict_type == 'Gabor':
         A = 0
     return A
-def generate_sparse_data(dense_vec_dim,sparse_vec_dim,test_rate,data_dir,max_sample = 60000,dict_type = 'rand'\
+def generate_sparse_data(dense_vec_dim,sparse_vec_dim,test_rate,data_dir,max_sample = 600000,dict_type = 'rand'\
                          ,nonnegtive = True,sparse_rate = 0.1,noise_type = 'guass',noise_level = pow(10,-3),sparse_type = 'uniform'):
     dict = dictionary_gener(dense_vec_dim, sparse_vec_dim, dict_type = dict_type)
     x,y,y_benchmark = generor_data(dense_vec_dim,sparse_vec_dim,dict,max_sample = max_sample,nonnegtive = nonnegtive ,sparse_type = sparse_type, SNR = noise_level, sparse_rate = sparse_rate, noise_type = noise_type)
-    return save_file(x, y, data_dir, dict, test_rate,noise_level,sparse_rate)
+    return save_file(x, y, data_dir, dict, test_rate,noise_level,sparse_rate),dict
 
 
 
@@ -201,9 +204,9 @@ def prepare_data(seqs, labels=None,regression = True):
     x_deminsion = len(seqs[0])
     y_deminsion = len(labels[0])
     # each column in x corresponding to a sample
-    x = np.zeros((n_samples, x_deminsion)).astype(theano.config.floatX)
+    x = np.zeros((n_samples, x_deminsion))
     if regression:
-        labels_out = np.zeros((n_samples, y_deminsion)).astype(theano.config.floatX)
+        labels_out = np.zeros((n_samples, y_deminsion))
     else:
         labels_out = np.zeros((n_samples, y_deminsion)).astype(np.int64)
     for idx, s in enumerate(seqs):
